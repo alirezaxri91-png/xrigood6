@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="fa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>xrigood - مهارت‌ها و مهارت پلاس</title>
+<link href="https://fonts.googleapis.com/css2?family=Yekan+Bakh+Fa&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1724; --card:#0b1220; --muted:#a5b4c4; 
+  --accent1:#ffd54a; --accent2:#60c47a; --accent3:#4da6ff; --glass: rgba(255,255,255,0.05);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Yekan Bakh Fa',system-ui;direction:rtl;background:linear-gradient(135deg,#071028,#0f1724);color:#e6eef8;padding:32px;}
+.wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:30px;}
+header{display:flex;align-items:center;gap:20px;margin-bottom:20px;flex-wrap:wrap;position:relative;}
+.avatar{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:28px;color:#022;box-shadow:0 12px 40px rgba(0,0,0,0.6);}
+h1{font-size:28px;margin-bottom:4px;}
+p.lead{color:var(--muted);font-size:14px;}
+.card{background:var(--glass);backdrop-filter:blur(12px);border-radius:20px;padding:24px;box-shadow:0 12px 40px rgba(2,6,23,0.7);border:1px solid rgba(255,255,255,0.08);}
+.skills{position:relative;}
+.skill-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:20px;margin-top:20px;}
+.skill-container{display:flex;align-items:center;gap:10px;}
+.skill{position:relative;width:120px;height:120px;background:rgba(255,255,255,0.02);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:transform 0.3s;}
+.skill.plus{border-radius:12px;}
+.skill:hover{transform:scale(1.05);}
+.progress{width:110px;height:110px;display:grid;place-items:center;position:relative;}
+.progress svg{transform:rotate(-90deg);}
+.progress .label{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.pct{font-weight:800;font-size:18px;}
+.skill-name{font-size:13px;color:var(--muted);margin-top:6px;text-align:center;}
+.rating-text{font-size:12px;margin-top:4px;}
+.btns{display:flex;flex-direction:column;gap:4px;}
+.btns button{padding:3px 6px;border-radius:6px;border:none;font-size:12px;cursor:pointer;transition:all 0.2s;color:#fff;}
+.delete-btn{background:#ff4d4d;}
+.delete-btn:hover{background:#ff1a1a;}
+.edit-btn{background:#4dc2ff;}
+.edit-btn:hover{background:#1aa3ff;}
+.note-btn{background:#ffb84d;}
+.note-btn:hover{background:#ff9a1a;}
+input,button{padding:8px 12px;border-radius:12px;background:rgba(255,255,255,0.08);border:none;color:#fff;outline:none;}
+button:hover{background:rgba(255,255,255,0.15);}
+#confettiCanvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;}
+.header-buttons{position:absolute;top:0;left:0;display:flex;gap:8px;}
+#welcomeModal{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:100;
+}
+#welcomeModal .box{
+  background:#0b1220;padding:30px;border-radius:20px;max-width:400px;width:90%;text-align:center;
+}
+#welcomeModal input{width:100%;margin-top:10px;}
+</style>
+</head>
+<body>
+<canvas id="confettiCanvas"></canvas>
+
+<div id="welcomeModal" style="display:none;">
+  <div class="box">
+    <h2>🎉 خوش اومدی به xrigood!</h2>
+    <p style="font-size:14px;color:#ccc;">لطفاً مشخصات پروفایلت رو پر کن 👇</p>
+    <input id="nameInput" placeholder="نام پروفایل">
+    <input id="descInput" placeholder="توضیحات کوتاه">
+    <input id="imgInput" placeholder="لینک عکس پروفایل">
+    <button id="saveProfileBtn" style="margin-top:12px;">ذخیره و ورود</button>
+  </div>
+</div>
+
+<div class="wrap" id="mainContent" style="display:none;">
+<header class="card">
+  <div class="avatar" id="profileAvatar"><img src="https://via.placeholder.com/90" alt="پروفایل" style="width:90px;height:90px;border-radius:50%;"></div>
+  <div>
+    <h1 id="profileName">نام خودت</h1>
+    <p class="lead" id="profileDesc">توضیحات خودت را اینجا بنویس</p>
+  </div>
+  <div class="header-buttons">
+    <button id="confettiBtn">🎉 بارش کاغذ رنگی</button>
+    <button id="imageBtn">🖼️ ساخت تصویر</button>
+  </div>
+</header>
+
+<h2 style="color:#ffd54a;">xrigood</h2>
+
+<div class="card skills">
+<h3>مهارت‌ها</h3>
+<div class="skill-grid" id="skills"></div>
+<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+  <input id="skillName" placeholder="نام مهارت">
+  <input id="skillPct" placeholder="درصد">
+  <input id="skillImg" placeholder="لینک عکس (اختیاری)">
+  <button id="addSkill">افزودن</button>
+</div>
+</div>
+
+<div class="card skills">
+<h3 style="color:#4da6ff">مهارت پلاس</h3>
+<div class="skill-grid" id="skillsPlus"></div>
+<div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+  <input id="skillNamePlus" placeholder="نام مهارت">
+  <input id="skillPctPlus" placeholder="درصد">
+  <input id="skillImgPlus" placeholder="لینک عکس">
+  <input id="skillFilePlus" placeholder="لینک فایل (اختیاری)">
+  <input id="skillSitePlus" placeholder="آدرس سایت (اختیاری)">
+  <button id="addSkillPlus">افزودن پلاس</button>
+</div>
+</div>
+</div>
+
+<script>
+// --- پروفایل و خوش آمدگویی ---
+if(!localStorage.getItem('profileCreated')){
+  document.getElementById('welcomeModal').style.display='flex';
+}else{
+  loadProfile();
+  document.getElementById('mainContent').style.display='block';
+}
+
+document.getElementById('saveProfileBtn').onclick=()=>{
+  localStorage.setItem('profileName',document.getElementById('nameInput').value);
+  localStorage.setItem('profileDesc',document.getElementById('descInput').value);
+  localStorage.setItem('profileImg',document.getElementById('imgInput').value);
+  localStorage.setItem('profileCreated','yes');
+  loadProfile();
+  document.getElementById('welcomeModal').style.display='none';
+  document.getElementById('mainContent').style.display='block';
+};
+
+function loadProfile(){
+  document.getElementById('profileName').textContent=localStorage.getItem('profileName');
+  document.getElementById('profileDesc').textContent=localStorage.getItem('profileDesc');
+  const img=localStorage.getItem('profileImg');
+  if(img)document.getElementById('profileAvatar').innerHTML=`<img src="${img}" style="width:90px;height:90px;border-radius:50%;">`;
+  loadData();
+}
+
+// --- مهارت‌ها و پلاس ---
+function saveData(){
+  localStorage.setItem('skills',document.getElementById('skills').innerHTML);
+  localStorage.setItem('skillsPlus',document.getElementById('skillsPlus').innerHTML);
+}
+function loadData(){
+  document.getElementById('skills').innerHTML=localStorage.getItem('skills')||'';
+  document.getElementById('skillsPlus').innerHTML=localStorage.getItem('skillsPlus')||'';
+  rebind();
+}
+function rebind(){
+  document.querySelectorAll('.delete-btn').forEach(btn=>btn.onclick=()=>{btn.closest('.skill-container').remove();saveData();});
+  document.querySelectorAll('.edit-btn').forEach(btn=>btn.onclick=()=>editSkill(btn.closest('.skill-container')));
+  document.querySelectorAll('.note-btn').forEach(btn=>btn.onclick=()=>openNote(btn.closest('.skill-container')));
+  document.querySelectorAll('.progress').forEach(p=>animateProgress(p));
+}
+function animateProgress(el){
+  const pct=parseInt(el.getAttribute('data-percentage')||0);
+  const svgBar=el.querySelector('.bar');
+  const label=el.querySelector('.pct');
+  const r=48; const c=Math.PI*(r*2); let start=null;
+  function step(ts){
+    if(!start)start=ts;
+    const t=Math.min(1,(ts-start)/1000);
+    const current=Math.round(t*pct);
+    const currentDash=(current/100)*c;
+    svgBar.style.strokeDasharray=currentDash+' '+c;
+    label.textContent=current+'%';
+    if(t<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function getColorAndText(pct){
+  if(pct<40) return ['#ff4d4d','ضعیف'];
+  if(pct<70) return ['#ffb84d','متوسط'];
+  return ['#60c47a','عالی'];
+}
+function createSkill(parent,name,pct,img='',color='#ffd54a',link='',file='',isPlus=false){
+  const container=document.createElement('div');
+  container.className='skill-container';
+  let extra='';
+  if(link)extra+=`<a href="${link}" target="_blank" style="color:${color};font-size:12px;">🌐</a>`;
+  if(file)extra+=`<a href="${file}" download style="color:${color};font-size:12px;">📎</a>`;
+  let imgTag = img?`<img src="${img}" style="width:40px;height:40px;border-radius:50%;margin-bottom:4px;">`:'';
+  let skillClass = isPlus ? 'skill plus' : 'skill';
+  let [autoColor,textRating]=getColorAndText(pct);
+  container.innerHTML=`<div class="${skillClass}">
+    <div class="progress" data-percentage="${pct}">
+      <svg width="110" height="110">
+        <circle cx="55" cy="55" r="48" stroke="rgba(255,255,255,0.06)" stroke-width="12" fill="none"></circle>
+        <circle class="bar" cx="55" cy="55" r="48" stroke-linecap="round" stroke-width="12" stroke="${autoColor}" stroke-dasharray="0 1000" fill="none"></circle>
+      </svg>
+      <div class="label">${imgTag}<div class="pct">0%</div><div class="skill-name">${name}</div><div class="rating-text">${textRating}</div>${extra}</div>
+    </div>
+  </div>
+  <div class="btns">
+    <button class='note-btn'>📝</button>
+    <button class='edit-btn'>🖊️</button>
+    <button class='delete-btn'>🗑️</button>
+  </div>`;
+  container.querySelector('.delete-btn').onclick=()=>{container.remove();saveData();};
+  container.querySelector('.edit-btn').onclick=()=>editSkill(container);
+  container.querySelector('.note-btn').onclick=()=>openNote(container);
+  parent.appendChild(container);
+  animateProgress(container.querySelector('.progress'));
+  saveData();
+  if(pct>=70) runConfetti();
+}
+function editSkill(container){
+  let currentName=container.querySelector('.skill-name').textContent;
+  let currentPct=container.querySelector('.progress').getAttribute('data-percentage');
+  let newName=prompt('نام مهارت:',currentName);
+  let newPct=prompt('درصد مهارت:',currentPct);
+  if(newName!==null&&newPct!==null){
+    container.querySelector('.skill-name').textContent=newName;
+    container.querySelector('.progress').setAttribute('data-percentage',parseInt(newPct));
+    let [autoColor,textRating]=getColorAndText(parseInt(newPct));
+    container.querySelector('.bar').setAttribute('stroke',autoColor);
+    container.querySelector('.rating-text').textContent=textRating;
+    animateProgress(container.querySelector('.progress'));
+    saveData();
+    if(newPct>=70) runConfetti();
+  }
+}
+function openNote(container){
+  let skillName=container.querySelector('.skill-name').textContent;
+  let key='note_'+skillName;
+  let noteContent=localStorage.getItem(key)||'';
+  let noteWindow=window.open('','_blank','width=400,height=400');
+  noteWindow.document.write(`
+    <title>یادداشت ${skillName}</title>
+    <body style="background:#0f1724;color:#e6eef8;font-family:sans-serif;padding:20px;">
+      <h2>یادداشت ${skillName}</h2>
+      <textarea id="noteText" style="width:100%;height:70%;background:#1a1a1a;color:#fff;padding:8px;border-radius:8px;border:none;">${noteContent}</textarea>
+      <br><button id="saveBtn" style="margin-top:12px;padding:8px 12px;border-radius:8px;background:#ffd54a;border:none;color:#022;cursor:pointer;">ذخیره</button>
+    </body>
+  `);
+  noteWindow.document.getElementById('saveBtn').onclick=()=>{
+    let text=noteWindow.document.getElementById('noteText').value;
+    localStorage.setItem(key,text);
+    alert('ذخیره شد ✅');
+  };
+}
+
+// --- دکمه‌ها ---
+function runConfetti(){
+  const canvas=document.getElementById('confettiCanvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  let confettis=[];
+  for(let i=0;i<150;i++){
+    confettis.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height-100,
+      r:Math.random()*6+4,
+      d:Math.random()*10+5,
+      color:`hsl(${Math.random()*360},100%,50%)`,
+      tilt:Math.random()*10-10,
+    });
+  }
+  let t=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    confettis.forEach(f=>{
+      ctx.beginPath();
+      ctx.moveTo(f.x+f.tilt,f.y);
+      ctx.lineTo(f.x+f.tilt+f.r/2,f.y+f.r);
+      ctx.lineWidth=f.r/2;
+      ctx.strokeStyle=f.color;
+      ctx.stroke();
+      f.y+=Math.cos(t+f.d)+1+f.r/2;
+      f.x+=Math.sin(t);
+      f.tilt=Math.sin(t)*15;
+      if(f.y>canvas.height){f.y=-10;f.x=Math.random()*canvas.width;}
+    });
+    t+=0.01;
+  }
+  let anim=setInterval(draw,16);
+  setTimeout(()=>{clearInterval(anim);ctx.clearRect(0,0,canvas.width,canvas.height);},3000);
+}
+
+document.getElementById('confettiBtn').onclick=runConfetti;
+document.getElementById('imageBtn').onclick=()=>{
+  const canvas=document.createElement('canvas');
+  const ctx=canvas.getContext('2d');
+  const w=800,h=600;
+  canvas.width=w; canvas.height=h;
+  ctx.fillStyle='#0f1724';
+  ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='#ffd54a';
+  ctx.font='24px Yekan Bakh Fa';
+  ctx.fillText('مهارت‌ها و مهارت پلاس',20,40);
+  let y=80;
+  document.querySelectorAll('.skill-container').forEach((sc,i)=>{
+    const name=sc.querySelector('.skill-name').textContent;
+    const pct=sc.querySelector('.progress').getAttribute('data-percentage');
+    ctx.fillStyle=getColorAndText(pct)[0];
+    ctx.fillRect(20,y,parseInt(pct)*5,20);
+    ctx.fillStyle='#fff';
+    ctx.fillText(name+' - '+pct+'%',30,y+16);
+    y+=30;
+  });
+  const link=document.createElement('a');
+  link.download='skills.png';
+  link.href=canvas.toDataURL();
+  link.click();
+}
+
+// --- افزودن مهارت‌ها ---
+document.getElementById('addSkill').onclick=()=>{
+  let n=document.getElementById('skillName').value||'مهارت جدید';
+  let p=parseInt(document.getElementById('skillPct').value)||0;
+  let i=document.getElementById('skillImg').value||'';
+  createSkill(document.getElementById('skills'),n,p,i,'#ffd54a');
+  document.getElementById('skillName').value='';
+  document.getElementById('skillPct').value='';
+  document.getElementById('skillImg').value='';
+}
+document.getElementById('addSkillPlus').onclick=()=>{
+  let n=document.getElementById('skillNamePlus').value||'مهارت پلاس جدید';
+  let p=parseInt(document.getElementById('skillPctPlus').value)||0;
+  let i=document.getElementById('skillImgPlus').value||'';
+  let f=document.getElementById('skillFilePlus').value||'';
+  let s=document.getElementById('skillSitePlus').value||'';
+  createSkill(document.getElementById('skillsPlus'),n,p,i,'#4da6ff',s,f,true);
+  document.getElementById('skillNamePlus').value='';
+  document.getElementById('skillPctPlus').value='';
+  document.getElementById('skillImgPlus').value='';
+  document.getElementById('skillFilePlus').value='';
+  document.getElementById('skillSitePlus').value='';
+}
+</script>
+</body>
+</html>
